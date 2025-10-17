@@ -10,14 +10,9 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Verifica que esté logueado
-        if (!Auth::check()) {
-            return redirect()->route('login'); 
-        }
-
-        // Verifica que sea admin
-        if (Auth::user()->rol !== 'admin') {
-            abort(403); // usuario logueado pero no admin
+        // Verifica si hay usuario logueado y si su rol es admin
+        if (!session('usuario') || session('usuario')->rol !== 'admin') {
+            abort(403); // Prohibido
         }
 
         return $next($request);

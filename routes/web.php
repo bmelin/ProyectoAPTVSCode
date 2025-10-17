@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\PacienteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,9 +16,12 @@ use App\Http\Controllers\UsuarioController;
 |
 */
 
+// Rutas para login
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
 
 // Vistas protegidas por rol
 Route::get('/admin', function() {
@@ -30,7 +34,30 @@ Route::get('/medico', function() {
     return view('medico.inicio');
 })->name('medico.dashboard');
 
-Route::middleware(['auth', 'admin'])->group(function () {
+
+
+// Rutas para gestionar usuarios
+Route::middleware(['admin'])->group(function () {
     Route::get('/usuarios/crear', [UsuarioController::class, 'crear'])->name('usuarios.crear');
     Route::post('/usuarios/guardar', [UsuarioController::class, 'guardar'])->name('usuarios.guardar');
+});
+
+Route::middleware(['admin'])->group(function () {
+    // Listar usuarios
+    Route::get('/usuarios', [UsuarioController::class, 'listar'])->name('usuarios.listar');
+    // Formulario para editar usuario
+    Route::get('/usuarios/{id}/editar', [UsuarioController::class, 'editar'])->name('usuarios.editar');
+    // Actualizar usuario
+    Route::post('/usuarios/{id}/actualizar', [UsuarioController::class, 'actualizar'])->name('usuarios.actualizar');
+    // Eliminar usuario
+    Route::delete('/usuarios/{id}', [UsuarioController::class, 'eliminar'])->name('usuarios.eliminar');
+});
+
+
+
+
+// Rutas para gestionar pacientes
+Route::middleware(['medico'])->group(function () {
+    Route::get('/pacientes/crear', [PacienteController::class, 'crear'])->name('pacientes.crear');
+    Route::post('/pacientes/guardar', [PacienteController::class, 'guardar'])->name('pacientes.guardar');
 });
