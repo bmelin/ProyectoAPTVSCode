@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Paciente;
 use App\Models\Usuario;
+use Carbon\Carbon;
 
 class PacienteHistorial extends Model
 {
@@ -29,6 +30,11 @@ class PacienteHistorial extends Model
         'PrimerHijo',
         'fecha_registro',
     ];
+
+    protected $casts = [
+        'fecha_registro' => 'datetime',
+    ];
+
 
     public function paciente()
     {

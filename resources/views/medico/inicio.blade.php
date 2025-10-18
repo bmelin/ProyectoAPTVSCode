@@ -39,7 +39,7 @@
 
             <!-- Historial de pacientes -->
             <div class="col-md-4">
-                <a href="#" class="text-decoration-none">
+                <a href="{{ route('pacientes.buscar') }}" class="text-decoration-none">
                     <div class="card shadow btn-dashboard text-center h-100 rounded-4">
                         <div class="card-body d-flex flex-column justify-content-center align-items-center">
                             <i class="bi bi-journal-medical display-4 mb-3"></i>

@@ -66,4 +66,8 @@ Route::middleware(['medico'])->group(function () {
     //formulario datos que cambian
     Route::get('/pacientes/{id}/historial/crear', [PacienteHistorialController::class, 'crear'])->name('pacientes.historial.crear');
     Route::post('/pacientes/{id}/historial/guardar', [PacienteHistorialController::class, 'guardar'])->name('pacientes.historial.guardar');
+    
+    // Buscar paciente
+    Route::get('/pacientes/buscar', [PacienteController::class, 'buscarVista'])->name('pacientes.buscar');
+    Route::post('/pacientes/buscar', [PacienteController::class, 'buscar'])->name('pacientes.buscar.post');
 });
