@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\PacienteController;
+use App\Http\Controllers\PacienteHistorialController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +59,11 @@ Route::middleware(['admin'])->group(function () {
 
 // Rutas para gestionar pacientes
 Route::middleware(['medico'])->group(function () {
+    //formulario datos fijos
     Route::get('/pacientes/crear', [PacienteController::class, 'crear'])->name('pacientes.crear');
     Route::post('/pacientes/guardar', [PacienteController::class, 'guardar'])->name('pacientes.guardar');
+
+    //formulario datos que cambian
+    Route::get('/pacientes/{id}/historial/crear', [PacienteHistorialController::class, 'crear'])->name('pacientes.historial.crear');
+    Route::post('/pacientes/{id}/historial/guardar', [PacienteHistorialController::class, 'guardar'])->name('pacientes.historial.guardar');
 });
