@@ -9,6 +9,17 @@
             </div>
 
             <div class="card-body p-4">
+
+                {{-- ✅ Mensaje de éxito --}}
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"
+                         style="background: linear-gradient(135deg, #a8e6ff 0%, #8de4ff 100%);
+                                border: none; color: #004c66; font-weight: 600;">
+                        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 <h5 class="fw-bold mb-3 text-primary">{{ $paciente->nombre }}</h5>
                 <p><strong>RUT:</strong> {{ $paciente->rut }}</p>
                 <p><strong>Sexo:</strong> {{ $paciente->sexo === 'F' ? 'Femenino' : 'Masculino' }}</p>
@@ -22,8 +33,8 @@
                 @else
                     <div class="timeline-container position-relative">
                         @foreach($historiales as $historial)
-                            <div class="timeline-item d-inline-block text-center mx-2" 
-                                 data-bs-toggle="tooltip" 
+                            <div class="timeline-item d-inline-block text-center mx-2"
+                                 data-bs-toggle="tooltip"
                                  title="
                                  Edad: {{ $historial->edad }},
                                  Mamografía: {{ $historial->Mamografia ? 'Sí' : 'No' }},
@@ -58,12 +69,48 @@
     })
 </script>
 
+{{-- 🎨 Estilos personalizados (mismo estilo celeste del resto de vistas) --}}
 <style>
+.dashboard-bg {
+    background: linear-gradient(160deg, #d0f0ff 0%, #b0e0ff 100%);
+    min-height: 100vh;
+}
+
+.user-card {
+    border-radius: 1rem;
+    background-color: #fff;
+    color: #000;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.header-gradient {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #fff;
+    border: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-gradient:hover {
+    background: linear-gradient(135deg, #3aa3f7 0%, #00d5f0 100%);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
 .timeline-container {
     border-top: 3px solid #00c6ff;
     padding-top: 20px;
     text-align: center;
 }
+
 .timeline-dot {
     width: 14px;
     height: 14px;
@@ -72,6 +119,7 @@
     margin: 0 auto;
     cursor: pointer;
 }
+
 .timeline-date {
     font-size: 0.9rem;
     color: #333;

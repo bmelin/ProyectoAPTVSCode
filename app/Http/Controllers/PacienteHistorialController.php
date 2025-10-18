@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PacienteHistorial;
+use App\Models\Paciente;
 
 class PacienteHistorialController extends Controller
 {
@@ -34,6 +35,13 @@ class PacienteHistorialController extends Controller
 
         PacienteHistorial::create($validated);
 
-        return redirect()->route('medico.dashboard')->with('success', 'Historial del paciente registrado correctamente.');
+        // 🔹 Buscar el paciente con sus historiales
+        $paciente = Paciente::findOrFail($id_paciente);
+        $historiales = $paciente->historiales()->orderBy('fecha_registro', 'asc')->get();
+
+        // 🔹 Redirigir a la vista del paciente con mensaje de éxito
+        return redirect()
+            ->route('pacientes.ver', $id_paciente)
+            ->with('success', 'Historial del paciente registrado correctamente.');
     }
 }

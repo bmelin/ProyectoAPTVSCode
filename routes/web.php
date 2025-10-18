@@ -70,4 +70,8 @@ Route::middleware(['medico'])->group(function () {
     // Buscar paciente
     Route::get('/pacientes/buscar', [PacienteController::class, 'buscarVista'])->name('pacientes.buscar');
     Route::post('/pacientes/buscar', [PacienteController::class, 'buscar'])->name('pacientes.buscar.post');
+
+    // Mostrar un paciente con sus historiales por ID
+    Route::get('/pacientes/{id}/ver', [PacienteController::class, 'verPaciente'])->name('pacientes.ver');
+
 });

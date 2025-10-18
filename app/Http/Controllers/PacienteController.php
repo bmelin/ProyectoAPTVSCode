@@ -60,5 +60,13 @@ class PacienteController extends Controller
         $historiales = $paciente->historiales()->orderBy('fecha_registro', 'asc')->get();
 
         return view('medico.verpaciente', compact('paciente', 'historiales'));
-}
+    }
+
+    public function verPaciente($id)
+    {
+        $paciente = Paciente::findOrFail($id);
+        $historiales = $paciente->historiales()->orderBy('fecha_registro', 'asc')->get();
+
+        return view('medico.verpaciente', compact('paciente', 'historiales'));
+    }
 }
