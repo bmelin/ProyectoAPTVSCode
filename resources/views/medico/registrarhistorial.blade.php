@@ -109,12 +109,26 @@
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Edad primera menstruación</label>
-                                    <select class="form-select rounded-3" name="Menstruacion" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="menos_de_12">Menor a 12 años</option>
-                                        <option value="12_a_13">12 a 13 años</option>
-                                        <option value="mayor_de_14">Mayor a 14 años</option>
-                                    </select>
+
+                                    @if (!$tieneHistorial)
+                                        {{-- Primer registro: campo editable --}}
+                                        <select class="form-select rounded-3" name="Menstruacion" required>
+                                            <option value="">Selecciona</option>
+                                            <option value="menos_de_12">Menor a 12 años</option>
+                                            <option value="12_a_13">12 a 13 años</option>
+                                            <option value="mayor_de_14">Mayor a 14 años</option>
+                                        </select>
+                                    @else
+                                        {{-- Segundo o más registros: campo bloqueado --}}
+                                        <select class="form-select rounded-3" name="Menstruacion" disabled>
+                                            <option value="menos_de_12" {{ $menstruacion == 'menos_de_12' ? 'selected' : '' }}>Menor a 12 años</option>
+                                            <option value="12_a_13" {{ $menstruacion == '12_a_13' ? 'selected' : '' }}>12 a 13 años</option>
+                                            <option value="mayor_de_14" {{ $menstruacion == 'mayor_de_14' ? 'selected' : '' }}>Mayor a 14 años</option>
+                                        </select>
+
+                                        {{-- Campo oculto para mantener el valor al enviar --}}
+                                        <input type="hidden" name="Menstruacion" value="{{ $menstruacion }}">
+                                    @endif
                                 </div>
 
                                 <div class="col-md-6 mb-3">

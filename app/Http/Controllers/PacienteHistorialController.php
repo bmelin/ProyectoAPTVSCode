@@ -11,7 +11,16 @@ class PacienteHistorialController extends Controller
     // Mostrar formulario historial
     public function crear($id_paciente)
     {
-        return view('medico.registrarhistorial', compact('id_paciente'));
+        $paciente = \App\Models\Paciente::findOrFail($id_paciente);
+        $tieneHistorial = $paciente->historiales()->exists();
+        $menstruacion = null;
+
+        // Si ya tiene historial, tomamos el valor del primer registro
+        if ($tieneHistorial) {
+            $menstruacion = $paciente->historiales()->first()->Menstruacion;
+        }
+
+        return view('medico.registrarhistorial', compact('id_paciente', 'tieneHistorial', 'menstruacion'));
     }
 
     // Guardar historial
