@@ -27,6 +27,7 @@
                         <form action="{{ route('pacientes.guardar') }}" method="POST">
                             @csrf
                             <input type="hidden" name="id_medico" value="{{ session('usuario')->id_usuario }}">
+                            <input type="hidden" name="sexo" value="F">
 
                             {{-- Datos fijos --}}
                             <div class="row">
@@ -38,15 +39,6 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="rut" class="form-label fw-semibold">RUT</label>
                                     <input type="text" class="form-control rounded-3" id="rut" name="rut" maxlength="12" placeholder="Ej: 12.345.678-9" required>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="sexo" class="form-label fw-semibold">Sexo</label>
-                                    <select class="form-select rounded-3" id="sexo" name="sexo" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="M">Masculino</option>
-                                        <option value="F">Femenino</option>
-                                    </select>
                                 </div>
                             </div>
 
@@ -67,7 +59,7 @@
     </div>
 </div>
 
-{{-- Estilos personalizados (mismos colores y gradientes del formulario original) --}}
+{{-- Estilos personalizados --}}
 <style>
 .dashboard-bg {
     background: linear-gradient(160deg, #d0f0ff 0%, #b0e0ff 100%);
