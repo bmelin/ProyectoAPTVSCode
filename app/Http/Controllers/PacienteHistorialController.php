@@ -20,7 +20,7 @@ class PacienteHistorialController extends Controller
             $menstruacion = $paciente->historiales()->first()->Menstruacion;
         }
 
-        return view('medico.registrarhistorial', compact('id_paciente', 'tieneHistorial', 'menstruacion'));
+        return view('medico.registrarhistorial', compact('id_paciente', 'tieneHistorial', 'menstruacion', 'paciente'));
     }
 
     // Guardar historial

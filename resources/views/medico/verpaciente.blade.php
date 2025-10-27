@@ -38,6 +38,9 @@
                                  title="
                                  Edad: {{ $historial->edad }},
                                  Mamografía: {{ $historial->Mamografia ? 'Sí' : 'No' }},
+                                 FamiliarPrimerGradoCC: {{ $historial->FamiliarPrimerGradoCC ? 'Sí' : 'No' }},
+                                 FamiliarSegundoGradoCC: {{ $historial->FamiliarSegundoGradoCC ? 'Sí' : 'No' }},
+                                 DiagnosticoPrevioCancer: {{ $historial->DiagnosticoPrevioCancer ? 'Sí' : 'No'  }},
                                  Ejercicio: {{ $historial->Ejercicio }},
                                  Alcohol: {{ $historial->Alcohol }},
                                  Menstruación: {{ $historial->Menstruacion }},
