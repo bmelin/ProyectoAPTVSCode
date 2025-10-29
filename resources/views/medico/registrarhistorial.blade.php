@@ -23,20 +23,6 @@
                                 </ul>
                             </div>
                         @endif
-                        @php
-                            $primerHistorial = $tieneHistorial ? $paciente->historiales()->first() : null; 
-                            // Obtenemos el valor del primer historial del paciente
-                            $primerHistorial = $paciente->historiales()->first();
-                            $ultimaEdad = $paciente->historiales()->latest('fecha_registro')->first()?->edad ?? 15;
-                            // Último historial
-                            $primerHistorial = $paciente->historiales()->latest('fecha_registro')->first();
-
-                            // Verificar si alguna vez respondió "Sí" en los distintos campos
-                            $tuvoFamiliarPrimerGradoCC = $paciente->historiales()->where('FamiliarPrimerGradoCC', 1)->exists();
-                            $tuvoFamiliarSegundoGradoCC = $paciente->historiales()->where('FamiliarSegundoGradoCC', 1)->exists();
-                            $tuvoDiagnosticoPrevioCancer = $paciente->historiales()->where('DiagnosticoPrevioCancer', 1)->exists();
-                        @endphp
-
 
                         <form action="{{ route('pacientes.historial.guardar', $id_paciente) }}" method="POST">
                             @csrf
@@ -47,19 +33,7 @@
                                 {{-- Edad --}}
                                 <div class="col-md-6 mb-3">
                                     <label for="edad" class="form-label fw-semibold">Edad</label>
-                                    <input 
-                                        type="number" 
-                                        class="form-control rounded-3" 
-                                        id="edad" 
-                                        name="edad" 
-                                        min="{{ $ultimaEdad }}" 
-                                        placeholder="Ej: 42" 
-                                        value="{{ $ultimaEdad }}" 
-                                        required
-                                    >
-                                    @if($ultimaEdad > 15)
-                                        <small class="text-muted">La edad no puede ser menor a la última registrada: {{ $ultimaEdad }} años.</small>
-                                    @endif
+                                    <input type="number" class="form-control rounded-3" id="edad" name="edad" min="15" placeholder="Ej: 42" required>
                                 </div>
 
                                 {{-- Mamografía --}}
@@ -78,61 +52,31 @@
                             {{-- Antecedentes familiares --}}
                             <h5 class="fw-bold mb-3 text-primary">Antecedentes Familiares</h5>
                             <div class="row">
-                                {{-- Familiares directos --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Familiares directos (madre, hermana, hija)</label>
-                                    @if($tuvoFamiliarPrimerGradoCC)
-                                        <select class="form-select rounded-3" name="FamiliarPrimerGradoCC_disabled" disabled>
-                                            <option value="1" selected>Sí</option>
-                                            <option value="0">No</option>
-                                        </select>
-                                        <input type="hidden" name="FamiliarPrimerGradoCC" value="1">
-                                        <small class="text-muted fst-italic">Este dato no se puede modificar porque ya fue registrado previamente.</small>
-                                    @else
-                                        <select class="form-select rounded-3" name="FamiliarPrimerGradoCC" required>
-                                            <option value="">Selecciona</option>
-                                            <option value="1">Sí</option>
-                                            <option value="0" {{ $primerHistorial && $primerHistorial->FamiliarPrimerGradoCC == 0 ? 'selected' : '' }}>No</option>
-                                        </select>
-                                    @endif
+                                    <select class="form-select rounded-3" name="FamiliarPrimerGradoCC" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="1">Sí</option>
+                                        <option value="0">No</option>
+                                    </select>
                                 </div>
 
-                                {{-- Otros familiares --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Otros familiares (abuela, tía, prima)</label>
-                                    @if($tuvoFamiliarSegundoGradoCC)
-                                        <select class="form-select rounded-3" name="FamiliarSegundoGradoCC_disabled" disabled>
-                                            <option value="1" selected>Sí</option>
-                                            <option value="0">No</option>
-                                        </select>
-                                        <input type="hidden" name="FamiliarSegundoGradoCC" value="1">
-                                        <small class="text-muted fst-italic">Este dato no se puede modificar porque ya fue registrado previamente.</small>
-                                    @else
-                                        <select class="form-select rounded-3" name="FamiliarSegundoGradoCC" required>
-                                            <option value="">Selecciona</option>
-                                            <option value="1">Sí</option>
-                                            <option value="0" {{ $primerHistorial && $primerHistorial->FamiliarSegundoGradoCC == 0 ? 'selected' : '' }}>No</option>
-                                        </select>
-                                    @endif
+                                    <select class="form-select rounded-3" name="FamiliarSegundoGradoCC" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="1">Sí</option>
+                                        <option value="0">No</option>
+                                    </select>
                                 </div>
 
-                                {{-- Diagnóstico previo de cáncer --}}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">¿Diagnóstico previo de cáncer?</label>
-                                    @if($tuvoDiagnosticoPrevioCancer)
-                                        <select class="form-select rounded-3" name="DiagnosticoPrevioCancer_disabled" disabled>
-                                            <option value="1" selected>Sí</option>
-                                            <option value="0">No</option>
-                                        </select>
-                                        <input type="hidden" name="DiagnosticoPrevioCancer" value="1">
-                                        <small class="text-muted fst-italic">Este dato no se puede modificar porque ya fue registrado previamente.</small>
-                                    @else
-                                        <select class="form-select rounded-3" name="DiagnosticoPrevioCancer" required>
-                                            <option value="">Selecciona</option>
-                                            <option value="1">Sí</option>
-                                            <option value="0" {{ $primerHistorial && $primerHistorial->DiagnosticoPrevioCancer == 0 ? 'selected' : '' }}>No</option>
-                                        </select>
-                                    @endif
+                                    <select class="form-select rounded-3" name="DiagnosticoPrevioCancer" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="1">Sí</option>
+                                        <option value="0">No</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -184,42 +128,17 @@
 
                                         {{-- Campo oculto para mantener el valor al enviar --}}
                                         <input type="hidden" name="Menstruacion" value="{{ $menstruacion }}">
-                                        <small class="text-muted fst-italic">Este dato no se puede modificar porque ya fue registrado previamente.</small>
                                     @endif
                                 </div>
 
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Edad del primer hijo/a</label>
-                                    @if(!$tieneHistorial)
-                                        {{-- Primer registro: todas las opciones --}}
-                                        <select class="form-select rounded-3" name="PrimerHijo" required>
-                                            <option value="">Selecciona</option>
-                                            <option value="nunca">No ha tenido hijos</option>
-                                            <option value="menor_a_30">Menor a 30 años</option>
-                                            <option value="mayor_a_30">Mayor a 30 años</option>
-                                        </select>
-                                    @else
-                                    {{-- Hay historial previo --}}
-                                    @if($primerHistorial->PrimerHijo === 'nunca')
-                                        {{-- Si el primer registro fue "nunca", permitir seleccionar normalmente --}}
-                                        <select class="form-select rounded-3" name="PrimerHijo" required>
-                                            <option value="">Selecciona</option>
-                                            <option value="nunca" selected>No ha tenido hijos</option>
-                                            <option value="menor_a_30">Menor a 30 años</option>
-                                            <option value="mayor_a_30">Mayor a 30 años</option>
-                                        </select>
-                                    @else
-                                    {{-- Si el primer registro fue menor_a_30 o mayor_a_30: mostrar solo la opción registrada, bloquearla y enviar valor hidden --}}
-                                        <select class="form-select rounded-3" name="PrimerHijo_disabled" disabled>
-                                            <option value="{{ $primerHistorial->PrimerHijo }}" selected>
-                                                {{ $primerHistorial->PrimerHijo === 'menor_a_30' ? 'Menor a 30 años' : 'Mayor a 30 años' }}
-                                            </option>
-                                        </select>
-                                   {{-- input oculto con el nombre correcto para que pase la validación --}}
-                                    <input type="hidden" name="PrimerHijo" value="{{ $primerHistorial->PrimerHijo }}">
-                                    <small class="text-muted fst-italic">Este dato no se puede modificar porque ya fue registrado previamente.</small>
-                                    @endif
-                                @endif
+                                    <select class="form-select rounded-3" name="PrimerHijo" required>
+                                        <option value="">Selecciona</option>
+                                        <option value="nunca">No ha tenido hijos</option>
+                                        <option value="menor_a_30">Menor a 30 años</option>
+                                        <option value="mayor_a_30">Mayor a 30 años</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -239,33 +158,6 @@
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const edadInput = document.getElementById('edad');
-    const primerHijoSelect = document.querySelector('select[name="PrimerHijo"]');
-    const opcionMayor30 = primerHijoSelect.querySelector('option[value="mayor_a_30"]');
-
-    function actualizarOpcionesHijo() {
-        const edad = parseInt(edadInput.value);
-        if (!isNaN(edad)) {
-            if (edad < 30) {
-                opcionMayor30.style.display = 'none';
-                // Si estaba seleccionada, la deseleccionamos
-                if (primerHijoSelect.value === 'mayor_a_30') {
-                    primerHijoSelect.value = '';
-                }
-            } else {
-                opcionMayor30.style.display = 'block';
-            }
-        }
-    }
-
-    // Ejecutar cuando cambie la edad
-    edadInput.addEventListener('input', actualizarOpcionesHijo);
-});
-</script>
-
 
 {{-- Estilos personalizados --}}
 <style>
