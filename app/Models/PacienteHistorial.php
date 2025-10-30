@@ -19,16 +19,9 @@ class PacienteHistorial extends Model
     protected $fillable = [
         'id_paciente',
         'id_medico',
-        'edad',
-        'Mamografia',
-        'FamiliarPrimerGradoCC',
-        'FamiliarSegundoGradoCC',
-        'DiagnosticoPrevioCancer',
-        'Ejercicio',
-        'Alcohol',
-        'Menstruacion',
-        'PrimerHijo',
         'fecha_registro',
+        'Riesgo',
+        'edad',
     ];
 
     protected $casts = [
@@ -45,4 +38,26 @@ class PacienteHistorial extends Model
     {
         return $this->belongsTo(Usuario::class, 'id_medico', 'id_usuario');
     }
+
+    // Relaciones con las nuevas tablas
+    public function antecedentes()
+    {
+        return $this->hasOne(AntecedentePaciente::class, 'id_historial', 'id_historial');
+    }
+
+    public function familiares()
+    {
+        return $this->hasOne(AntecedenteFamiliar::class, 'id_historial', 'id_historial');
+    }
+
+    public function habitos()
+    {
+        return $this->hasOne(HabitoPaciente::class, 'id_historial', 'id_historial');
+    }
+
+    public function reproductivos()
+    {
+        return $this->hasOne(FactorReproductivo::class, 'id_historial', 'id_historial');
+    }
+
 }

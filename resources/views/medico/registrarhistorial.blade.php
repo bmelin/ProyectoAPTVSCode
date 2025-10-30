@@ -111,7 +111,6 @@
                                     <label class="form-label">Edad primera menstruación</label>
 
                                     @if (!$tieneHistorial)
-                                        {{-- Primer registro: campo editable --}}
                                         <select class="form-select rounded-3" name="Menstruacion" required>
                                             <option value="">Selecciona</option>
                                             <option value="menos_de_12">Menor a 12 años</option>
@@ -119,27 +118,35 @@
                                             <option value="mayor_de_14">Mayor a 14 años</option>
                                         </select>
                                     @else
-                                        {{-- Segundo o más registros: campo bloqueado --}}
                                         <select class="form-select rounded-3" name="Menstruacion" disabled>
                                             <option value="menos_de_12" {{ $menstruacion == 'menos_de_12' ? 'selected' : '' }}>Menor a 12 años</option>
                                             <option value="12_a_13" {{ $menstruacion == '12_a_13' ? 'selected' : '' }}>12 a 13 años</option>
                                             <option value="mayor_de_14" {{ $menstruacion == 'mayor_de_14' ? 'selected' : '' }}>Mayor a 14 años</option>
                                         </select>
 
-                                        {{-- Campo oculto para mantener el valor al enviar --}}
                                         <input type="hidden" name="Menstruacion" value="{{ $menstruacion }}">
                                     @endif
                                 </div>
 
+
+                                @php
+                                    $bloquearPrimerHijo = in_array($primerHijo, ['menor_a_30', 'mayor_a_30']);
+                                @endphp
+
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Edad del primer hijo/a</label>
-                                    <select class="form-select rounded-3" name="PrimerHijo" required>
+                                    <select class="form-select rounded-3" id="primerHijo" name="PrimerHijo" {{ $bloquearPrimerHijo ? 'disabled' : 'required' }}>
                                         <option value="">Selecciona</option>
-                                        <option value="nunca">No ha tenido hijos</option>
-                                        <option value="menor_a_30">Menor a 30 años</option>
-                                        <option value="mayor_a_30">Mayor a 30 años</option>
+                                        <option value="nunca" {{ $primerHijo == 'nunca' ? 'selected' : '' }}>No ha tenido hijos</option>
+                                        <option value="menor_a_30" {{ $primerHijo == 'menor_a_30' ? 'selected' : '' }}>Menor a 30 años</option>
+                                        <option value="mayor_a_30" {{ $primerHijo == 'mayor_a_30' ? 'selected' : '' }}>Mayor a 30 años</option>
                                     </select>
+                                    @if($bloquearPrimerHijo)
+                                        <input type="hidden" name="PrimerHijo" value="{{ $primerHijo }}">
+                                    @endif
                                 </div>
+
+
                             </div>
 
                             {{-- Botones --}}
@@ -158,6 +165,39 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const edadInput = document.getElementById('edad');
+    const primerHijoSelect = document.getElementById('primerHijo');
+
+    // No hacer nada si está bloqueado
+    if (primerHijoSelect.disabled) return;
+
+    const opciones = Array.from(primerHijoSelect.options);
+
+    function actualizarOpciones() {
+        const edad = parseInt(edadInput.value);
+        if (!edad) return;
+
+        opciones.forEach(option => option.style.display = 'block'); // mostrar todas
+
+        if (edad < 30) {
+            opciones.forEach(option => {
+                if (option.value === 'mayor_a_30') option.style.display = 'none';
+            });
+        } else if (edad >= 30) {
+            opciones.forEach(option => {
+                if (option.value === 'menor_a_30') option.style.display = 'none';
+            });
+        }
+    }
+
+    edadInput.addEventListener('input', actualizarOpciones);
+    actualizarOpciones(); // inicial
+});
+</script>
+
 
 {{-- Estilos personalizados --}}
 <style>
