@@ -5,61 +5,107 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PacienteHistorial;
 use App\Models\Paciente;
+use Carbon\Carbon;
+
 
 class PacienteHistorialController extends Controller
 {
     // Mostrar formulario historial
-    public function crear($id_paciente)
+    public function crear(Request $request, $id_paciente)
     {
         $paciente = \App\Models\Paciente::findOrFail($id_paciente);
+
+        // Revisar si hay historiales
         $tieneHistorial = $paciente->historiales()->exists();
 
+        // Inicializar variables
+        $ultimoHistorial = null;
+        $edad = $request->edad ?? null; // edad pasada desde el registro del paciente
         $menstruacion = null;
         $primerHijo = null;
-        $edadUltimoHistorial = null;
+        $antecedentes = [
+            'FamiliarPrimerGradoCC' => null,
+            'FamiliarSegundoGradoCC' => null,
+            'DiagnosticoPrevioCancer' => null,
+        ];
 
         if ($tieneHistorial) {
-            // Tomamos el último historial con relaciones
+            // Tomar el último historial
             $ultimoHistorial = $paciente->historiales()
-                ->with('reproductivos')
-                ->orderBy('fecha_registro', 'desc')
+                ->latest('fecha_registro')
+                ->with(['antecedentes', 'familiares', 'reproductivos'])
                 ->first();
 
-            $edadUltimoHistorial = $ultimoHistorial->edad;
+            // Calcular la edad actualizada sumando los años transcurridos desde el último historial
+            if ($ultimoHistorial->edad !== null && $ultimoHistorial->fecha_registro !== null) {
+                $fechaUltimo = \Carbon\Carbon::parse($ultimoHistorial->fecha_registro);
+                $edadTranscurrida = $fechaUltimo->diffInYears(now());
+                $edad = $ultimoHistorial->edad + $edadTranscurrida;
+            }
+
+            // Menstruación
             $menstruacion = $ultimoHistorial->reproductivos->Menstruacion ?? null;
+
+            // Primer hijo
             $primerHijo = $ultimoHistorial->reproductivos->PrimerHijo ?? null;
+
+            // Antecedentes familiares
+            $antecedentes['FamiliarPrimerGradoCC'] = $ultimoHistorial->familiares->FamiliarPrimerGradoCC ?? null;
+            $antecedentes['FamiliarSegundoGradoCC'] = $ultimoHistorial->familiares->FamiliarSegundoGradoCC ?? null;
+            $antecedentes['DiagnosticoPrevioCancer'] = $ultimoHistorial->antecedentes->DiagnosticoPrevioCancer ?? null;
+        }
+
+        // Determinar opciones de PrimerHijo según edad
+        $opcionesPrimerHijo = [];
+        if ($edad !== null) {
+            if ($edad < 30) {
+                $opcionesPrimerHijo = ['nunca' => 'No ha tenido hijos', 'menor_a_30' => 'Menor a 30 años'];
+            } else {
+                $opcionesPrimerHijo = ['nunca' => 'No ha tenido hijos', 'mayor_a_30' => 'Mayor a 30 años'];
+            }
+        }
+
+        // Determinar si el campo PrimerHijo debe estar bloqueado (si ya se seleccionó una opción no cambiable)
+        $primerHijoBloqueado = false;
+        if ($ultimoHistorial && in_array($primerHijo, ['menor_a_30', 'mayor_a_30'])) {
+            $primerHijoBloqueado = true;
         }
 
         return view('medico.registrarhistorial', compact(
             'id_paciente',
+            'edad',
             'tieneHistorial',
             'menstruacion',
             'primerHijo',
-            'edadUltimoHistorial'
+            'antecedentes',
+            'opcionesPrimerHijo',
+            'primerHijoBloqueado'
         ));
     }
+
+
 
 
     public function guardar(Request $request, $id_paciente)
     {
         // Validar solo los campos que vienen del formulario
-    $validated = $request->validate([
-        'edad' => 'required|integer|min:0',
+        $validated = $request->validate([
+            'edad' => 'required|integer|min:0',
 
-        // booleanos
-        'Mamografia' => 'required|in:1,0',
-        'FamiliarPrimerGradoCC' => 'required|in:1,0',
-        'FamiliarSegundoGradoCC' => 'required|in:1,0',
-        'DiagnosticoPrevioCancer' => 'required|in:1,0',
+            // booleanos
+            'Mamografia' => 'required|in:1,0',
+            'FamiliarPrimerGradoCC' => 'required|in:1,0',
+            'FamiliarSegundoGradoCC' => 'required|in:1,0',
+            'DiagnosticoPrevioCancer' => 'required|in:1,0',
 
-        // strings categóricas
-        'Ejercicio' => 'required|in:nunca,menos_de_3,3_a_4,mas_de_4',
-        'Alcohol' => 'required|in:nunca,ocasional,frecuente,diario',
+            // strings categóricas
+            'Ejercicio' => 'required|in:nunca,menos_de_3,3_a_4,mas_de_4',
+            'Alcohol' => 'required|in:nunca,ocasional,frecuente,diario',
 
-        // strings categóricas (pero inmovibles después de 1er registro)
-        'Menstruacion' => 'required|in:menos_de_12,12_a_13,mayor_de_14',
-        'PrimerHijo' => 'required|in:nunca,menor_a_30,mayor_a_30',
-    ]);
+            // strings categóricas (pero inmovibles después de 1er registro)
+            'Menstruacion' => 'required|in:menos_de_12,12_a_13,mayor_de_14',
+            'PrimerHijo' => 'required|in:nunca,menor_a_30,mayor_a_30',
+        ]);
 
 
         // 1️⃣ Crear el historial principal (tabla madre)

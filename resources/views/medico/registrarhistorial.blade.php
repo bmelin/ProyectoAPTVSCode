@@ -33,7 +33,7 @@
                                 {{-- Edad --}}
                                 <div class="col-md-6 mb-3">
                                     <label for="edad" class="form-label fw-semibold">Edad</label>
-                                    <input type="number" class="form-control rounded-3" id="edad" name="edad" min="15" placeholder="Ej: 42" required>
+                                    <input type="number" class="form-control rounded-3" id="edad" name="edad" value="{{ $edad }}" readonly>
                                 </div>
 
                                 {{-- Mamografía --}}
@@ -49,36 +49,53 @@
 
                             <hr>
 
-                            {{-- Antecedentes familiares --}}
-                            <h5 class="fw-bold mb-3 text-primary">Antecedentes Familiares</h5>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Familiares directos (madre, hermana, hija)</label>
-                                    <select class="form-select rounded-3" name="FamiliarPrimerGradoCC" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="1">Sí</option>
-                                        <option value="0">No</option>
-                                    </select>
-                                </div>
+{{-- Familiar 1° grado --}}
+<div class="col-md-6 mb-3">
+    <label class="form-label">Familiares directos (madre, hermana, hija)</label>
+    <select class="form-select rounded-3" name="FamiliarPrimerGradoCC" required
+        @if($antecedentes['FamiliarPrimerGradoCC'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        <option value="1" {{ $antecedentes['FamiliarPrimerGradoCC'] == 1 ? 'selected' : '' }}>Sí</option>
+        <option value="0" {{ $antecedentes['FamiliarPrimerGradoCC'] == 0 ? 'selected' : '' }}>No</option>
+    </select>
 
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Otros familiares (abuela, tía, prima)</label>
-                                    <select class="form-select rounded-3" name="FamiliarSegundoGradoCC" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="1">Sí</option>
-                                        <option value="0">No</option>
-                                    </select>
-                                </div>
+    @if($antecedentes['FamiliarPrimerGradoCC'] == 1)
+        <input type="hidden" name="FamiliarPrimerGradoCC" value="1">
+    @endif
+</div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">¿Diagnóstico previo de cáncer?</label>
-                                    <select class="form-select rounded-3" name="DiagnosticoPrevioCancer" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="1">Sí</option>
-                                        <option value="0">No</option>
-                                    </select>
-                                </div>
-                            </div>
+{{-- Familiar 2° grado --}}
+<div class="col-md-6 mb-3">
+    <label class="form-label">Otros familiares (abuela, tía, prima)</label>
+    <select class="form-select rounded-3" name="FamiliarSegundoGradoCC" required
+        @if($antecedentes['FamiliarSegundoGradoCC'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        <option value="1" {{ $antecedentes['FamiliarSegundoGradoCC'] == 1 ? 'selected' : '' }}>Sí</option>
+        <option value="0" {{ $antecedentes['FamiliarSegundoGradoCC'] == 0 ? 'selected' : '' }}>No</option>
+    </select>
+
+    @if($antecedentes['FamiliarSegundoGradoCC'] == 1)
+        <input type="hidden" name="FamiliarSegundoGradoCC" value="1">
+    @endif
+</div>
+
+{{-- Diagnóstico previo de cáncer --}}
+<div class="col-md-6 mb-3">
+    <label class="form-label">¿Diagnóstico previo de cáncer?</label>
+    <select class="form-select rounded-3" name="DiagnosticoPrevioCancer" required
+        @if($antecedentes['DiagnosticoPrevioCancer'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        <option value="1" {{ $antecedentes['DiagnosticoPrevioCancer'] == 1 ? 'selected' : '' }}>Sí</option>
+        <option value="0" {{ $antecedentes['DiagnosticoPrevioCancer'] == 0 ? 'selected' : '' }}>No</option>
+    </select>
+
+    @if($antecedentes['DiagnosticoPrevioCancer'] == 1)
+        <input type="hidden" name="DiagnosticoPrevioCancer" value="1">
+    @endif
+</div>
+
+
+
 
                             <hr>
 
@@ -129,22 +146,29 @@
                                 </div>
 
 
-                                @php
-                                    $bloquearPrimerHijo = in_array($primerHijo, ['menor_a_30', 'mayor_a_30']);
-                                @endphp
-
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Edad del primer hijo/a</label>
-                                    <select class="form-select rounded-3" id="primerHijo" name="PrimerHijo" {{ $bloquearPrimerHijo ? 'disabled' : 'required' }}>
-                                        <option value="">Selecciona</option>
-                                        <option value="nunca" {{ $primerHijo == 'nunca' ? 'selected' : '' }}>No ha tenido hijos</option>
-                                        <option value="menor_a_30" {{ $primerHijo == 'menor_a_30' ? 'selected' : '' }}>Menor a 30 años</option>
-                                        <option value="mayor_a_30" {{ $primerHijo == 'mayor_a_30' ? 'selected' : '' }}>Mayor a 30 años</option>
-                                    </select>
-                                    @if($bloquearPrimerHijo)
-                                        <input type="hidden" name="PrimerHijo" value="{{ $primerHijo }}">
-                                    @endif
-                                </div>
+    <label class="form-label">Edad del primer hijo/a</label>
+
+    @if($primerHijoBloqueado)
+        {{-- Campo bloqueado según último historial --}}
+        <select class="form-select rounded-3" name="PrimerHijo" disabled>
+            @foreach($opcionesPrimerHijo as $valor => $texto)
+                <option value="{{ $valor }}" {{ $primerHijo == $valor ? 'selected' : '' }}>{{ $texto }}</option>
+            @endforeach
+        </select>
+        {{-- Campo oculto para mantener el valor --}}
+        <input type="hidden" name="PrimerHijo" value="{{ $primerHijo }}">
+    @else
+        {{-- Campo editable --}}
+        <select class="form-select rounded-3" name="PrimerHijo" required>
+            <option value="">Selecciona</option>
+            @foreach($opcionesPrimerHijo as $valor => $texto)
+                <option value="{{ $valor }}">{{ $texto }}</option>
+            @endforeach
+        </select>
+    @endif
+</div>
+
 
 
                             </div>
@@ -165,38 +189,6 @@
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const edadInput = document.getElementById('edad');
-    const primerHijoSelect = document.getElementById('primerHijo');
-
-    // No hacer nada si está bloqueado
-    if (primerHijoSelect.disabled) return;
-
-    const opciones = Array.from(primerHijoSelect.options);
-
-    function actualizarOpciones() {
-        const edad = parseInt(edadInput.value);
-        if (!edad) return;
-
-        opciones.forEach(option => option.style.display = 'block'); // mostrar todas
-
-        if (edad < 30) {
-            opciones.forEach(option => {
-                if (option.value === 'mayor_a_30') option.style.display = 'none';
-            });
-        } else if (edad >= 30) {
-            opciones.forEach(option => {
-                if (option.value === 'menor_a_30') option.style.display = 'none';
-            });
-        }
-    }
-
-    edadInput.addEventListener('input', actualizarOpciones);
-    actualizarOpciones(); // inicial
-});
-</script>
 
 
 {{-- Estilos personalizados --}}

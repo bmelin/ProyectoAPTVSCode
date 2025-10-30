@@ -42,6 +42,13 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha_nacimiento" class="form-label fw-semibold">Fecha de nacimiento</label>
+                                <input type="date" class="form-control rounded-3" id="fecha_nacimiento" name="fecha_nacimiento"
+                                    value="{{ old('fecha_nacimiento') }}" required>
+                            </div>
+
+
                             {{-- Botones --}}
                             <div class="text-center mt-4">
                                 <button type="submit" class="btn btn-gradient px-4 py-2 rounded-3 shadow-sm fw-semibold">

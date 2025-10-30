@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Paciente;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PacienteController extends Controller
 {
@@ -21,6 +22,7 @@ class PacienteController extends Controller
             'nombre' => 'required|string|max:255',
             'rut' => 'required|string|max:12|unique:pacientes_registros,rut',
             'sexo' => 'required|in:M,F',
+            'fecha_nacimiento' => 'required|date',
             'id_medico' => 'required|exists:usuarios,id_usuario'
         ]);
 
@@ -33,8 +35,11 @@ class PacienteController extends Controller
             'fecha_registro' => now(),
         ]);
 
+        // Calcular edad a partir de fecha de nacimiento del formulario
+        $edad = \Carbon\Carbon::parse($validated['fecha_nacimiento'])->age;
+
         // Redirige al formulario de historial pasando el id del paciente recién creado
-        return redirect()->route('pacientes.historial.crear', ['id' => $paciente->id_paciente]);
+        return redirect()->route('pacientes.historial.crear', ['id' => $paciente->id_paciente, 'edad' => $edad]);
     }
 
     // Mostrar el formulario de búsqueda
