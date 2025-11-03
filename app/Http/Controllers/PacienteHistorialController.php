@@ -142,10 +142,37 @@ class PacienteHistorialController extends Controller
         $paciente = \App\Models\Paciente::findOrFail($id_paciente);
         $historiales = $paciente->historiales()->orderBy('fecha_registro', 'asc')->get();
 
-        // 4️⃣ Redirigir con mensaje de éxito
-        return redirect()
-            ->route('pacientes.ver', $id_paciente)
-            ->with('success', 'Historial del paciente registrado correctamente.');
+        // ==== Ejecutar modelo ML ====
+        $command = "python3 " . base_path('python_model/predict.py') . " "
+            . escapeshellarg($request->edad) . " "
+            . escapeshellarg($request->FamiliarPrimerGradoCC) . " "
+            . escapeshellarg($request->FamiliarSegundoGradoCC) . " "
+            . escapeshellarg($request->DiagnosticoPrevioCancer) . " "
+            . escapeshellarg($request->Menstruacion) . " "
+            . escapeshellarg($request->PrimerHijo) . " "
+            . escapeshellarg($request->Ejercicio) . " "
+            . escapeshellarg($request->Alcohol) . " "
+            . escapeshellarg($request->Mamografia);
+
+        $prediccion = trim(shell_exec($command));
+        if ($prediccion === null || $prediccion === "") { $prediccion = 0; }
+
+        // $prediccion es el valor que viene del script Python (0,1,2)
+        $mapaRiesgo = [
+            0 => 'Bajo',
+            1 => 'Moderado',
+            2 => 'Alto'
+        ];
+
+        $riesgoTexto = $mapaRiesgo[$prediccion] ?? 'Desconocido';
+
+        // Guardar riesgo
+        $historial->Riesgo = $prediccion;
+        $historial->save();
+
+        // ==== Redirigir ====
+        return redirect()->route('pacientes.ver', $id_paciente)
+            ->with('success', "Historial registrado y riesgo calculado: $riesgoTexto");
     }
 
 }

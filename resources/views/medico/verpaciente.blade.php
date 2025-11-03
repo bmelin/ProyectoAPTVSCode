@@ -34,7 +34,7 @@
                     <div class="timeline-container position-relative">
                         @foreach($historiales as $historial)
                             <div class="timeline-item d-inline-block text-center mx-2"
-                                 data-bs-toggle="tooltip"
+                                data-bs-toggle="tooltip"
                                 title="
                                 Edad: {{ $historial->edad }},
                                 Mamografía: {{ $historial->antecedentes->Mamografia ? 'Sí' : 'No' }},
@@ -44,10 +44,17 @@
                                 Ejercicio: {{ $historial->habitos->Ejercicio }},
                                 Alcohol: {{ $historial->habitos->Alcohol }},
                                 Menstruación: {{ $historial->reproductivos->Menstruacion }},
-                                Primer hijo: {{ $historial->reproductivos->PrimerHijo }}">
-                                <div class="timeline-dot"></div>
-                                <div class="timeline-date mt-2">{{ $historial->fecha_registro->format('d/m/Y') }}</div>
-                            </div>
+                                Primer hijo: {{ $historial->reproductivos->PrimerHijo }},
+                                Riesgo cáncer: 
+                                @if($historial->Riesgo == 0) Bajo 
+                                @elseif($historial->Riesgo == 1) Moderado 
+                                @elseif($historial->Riesgo == 2) Alto 
+                                @else Desconocido @endif
+                                ">
+                            <div class="timeline-dot riesgo-{{ $historial->Riesgo }}"></div>
+                            <div class="timeline-date mt-2">{{ $historial->fecha_registro->format('d/m/Y') }}</div>
+                        </div>
+
                         @endforeach
                     </div>
                 @endif
