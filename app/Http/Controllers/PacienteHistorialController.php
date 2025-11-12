@@ -5,71 +5,59 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PacienteHistorial;
 use App\Models\Paciente;
+use App\Models\RespuestaBinaria;
+use App\Models\OpcionAlcohol;
+use App\Models\OpcionEjercicio;
+use App\Models\OpcionMenstruacion;
+use App\Models\OpcionPrimerHijo;
 use Carbon\Carbon;
-
 
 class PacienteHistorialController extends Controller
 {
-    // Mostrar formulario historial
+    /**
+     * Mostrar formulario de creación de historial médico
+     */
     public function crear(Request $request, $id_paciente)
     {
-        $paciente = \App\Models\Paciente::findOrFail($id_paciente);
+        $paciente = Paciente::findOrFail($id_paciente);
 
-        // Revisar si hay historiales
+        // Verificar si ya tiene historiales
         $tieneHistorial = $paciente->historiales()->exists();
-
-        // Inicializar variables
         $ultimoHistorial = null;
-        $edad = $request->edad ?? null; // edad pasada desde el registro del paciente
+        $edad = $request->edad ?? null;
         $menstruacion = null;
         $primerHijo = null;
         $antecedentes = [
-            'FamiliarPrimerGradoCC' => null,
-            'FamiliarSegundoGradoCC' => null,
-            'DiagnosticoPrevioCancer' => null,
+            'id_familiar_primer_grado' => null,
+            'id_familiar_segundo_grado' => null,
+            'id_diagnostico_previo' => null,
         ];
 
         if ($tieneHistorial) {
-            // Tomar el último historial
             $ultimoHistorial = $paciente->historiales()
                 ->latest('fecha_registro')
                 ->with(['antecedentes', 'familiares', 'reproductivos'])
                 ->first();
 
-            // Calcular la edad actualizada sumando los años transcurridos desde el último historial
-            if ($ultimoHistorial->edad !== null && $ultimoHistorial->fecha_registro !== null) {
-                $fechaUltimo = \Carbon\Carbon::parse($ultimoHistorial->fecha_registro);
-                $edadTranscurrida = $fechaUltimo->diffInYears(now());
-                $edad = $ultimoHistorial->edad + $edadTranscurrida;
+            if ($ultimoHistorial->edad && $ultimoHistorial->fecha_registro) {
+                $fechaUltimo = Carbon::parse($ultimoHistorial->fecha_registro);
+                $edad += $fechaUltimo->diffInYears(now());
             }
 
-            // Menstruación
-            $menstruacion = $ultimoHistorial->reproductivos->Menstruacion ?? null;
+            $menstruacion = $ultimoHistorial->reproductivos->id_menstruacion ?? null;
+            $primerHijo = $ultimoHistorial->reproductivos->id_primer_hijo ?? null;
 
-            // Primer hijo
-            $primerHijo = $ultimoHistorial->reproductivos->PrimerHijo ?? null;
-
-            // Antecedentes familiares
-            $antecedentes['FamiliarPrimerGradoCC'] = $ultimoHistorial->familiares->FamiliarPrimerGradoCC ?? null;
-            $antecedentes['FamiliarSegundoGradoCC'] = $ultimoHistorial->familiares->FamiliarSegundoGradoCC ?? null;
-            $antecedentes['DiagnosticoPrevioCancer'] = $ultimoHistorial->antecedentes->DiagnosticoPrevioCancer ?? null;
+            $antecedentes['id_familiar_primer_grado'] = $ultimoHistorial->familiares->id_familiar_primer_grado ?? null;
+            $antecedentes['id_familiar_segundo_grado'] = $ultimoHistorial->familiares->id_familiar_segundo_grado ?? null;
+            $antecedentes['id_diagnostico_previo'] = $ultimoHistorial->antecedentes->id_diagnostico_previo ?? null;
         }
 
-        // Determinar opciones de PrimerHijo según edad
-        $opcionesPrimerHijo = [];
-        if ($edad !== null) {
-            if ($edad < 30) {
-                $opcionesPrimerHijo = ['nunca' => 'No ha tenido hijos', 'menor_a_30' => 'Menor a 30 años'];
-            } else {
-                $opcionesPrimerHijo = ['nunca' => 'No ha tenido hijos', 'mayor_a_30' => 'Mayor a 30 años'];
-            }
-        }
-
-        // Determinar si el campo PrimerHijo debe estar bloqueado (si ya se seleccionó una opción no cambiable)
-        $primerHijoBloqueado = false;
-        if ($ultimoHistorial && in_array($primerHijo, ['menor_a_30', 'mayor_a_30'])) {
-            $primerHijoBloqueado = true;
-        }
+        // Opciones dinámicas desde tablas normalizadas
+        $respuestas = RespuestaBinaria::all();
+        $opcionesEjercicio = OpcionEjercicio::all();
+        $opcionesAlcohol = OpcionAlcohol::all();
+        $opcionesMenstruacion = OpcionMenstruacion::all();
+        $opcionesPrimerHijo = OpcionPrimerHijo::all();
 
         return view('medico.registrarhistorial', compact(
             'id_paciente',
@@ -79,100 +67,87 @@ class PacienteHistorialController extends Controller
             'primerHijo',
             'antecedentes',
             'opcionesPrimerHijo',
-            'primerHijoBloqueado'
+            'respuestas',
+            'opcionesEjercicio',
+            'opcionesAlcohol',
+            'opcionesMenstruacion'
         ));
+
     }
 
-
-
-
+    /**
+     * Guardar historial y calcular riesgo
+     */
     public function guardar(Request $request, $id_paciente)
     {
-        // Validar solo los campos que vienen del formulario
         $validated = $request->validate([
             'edad' => 'required|integer|min:0',
-
-            // booleanos
-            'Mamografia' => 'required|in:1,0',
-            'FamiliarPrimerGradoCC' => 'required|in:1,0',
-            'FamiliarSegundoGradoCC' => 'required|in:1,0',
-            'DiagnosticoPrevioCancer' => 'required|in:1,0',
-
-            // strings categóricas
-            'Ejercicio' => 'required|in:nunca,menos_de_3,3_a_4,mas_de_4',
-            'Alcohol' => 'required|in:nunca,ocasional,frecuente,diario',
-
-            // strings categóricas (pero inmovibles después de 1er registro)
-            'Menstruacion' => 'required|in:menos_de_12,12_a_13,mayor_de_14',
-            'PrimerHijo' => 'required|in:nunca,menor_a_30,mayor_a_30',
+            'id_mamografia' => 'required|exists:respuestas_binarias,id_respuesta',
+            'id_diagnostico_previo' => 'required|exists:respuestas_binarias,id_respuesta',
+            'id_familiar_primer_grado' => 'required|exists:respuestas_binarias,id_respuesta',
+            'id_familiar_segundo_grado' => 'required|exists:respuestas_binarias,id_respuesta',
+            'id_ejercicio' => 'required|exists:opciones_ejercicio,id_ejercicio',
+            'id_alcohol' => 'required|exists:opciones_alcohol,id_alcohol',
+            'id_menstruacion' => 'required|exists:opciones_menstruacion,id_menstruacion',
+            'id_primer_hijo' => 'required|exists:opciones_primer_hijo,id_primer_hijo',
         ]);
 
-
-        // 1️⃣ Crear el historial principal (tabla madre)
-        $historial = \App\Models\PacienteHistorial::create([
+        // Crear historial principal
+        $historial = PacienteHistorial::create([
             'id_paciente' => $id_paciente,
             'id_medico' => session('usuario')->id_usuario,
             'fecha_registro' => now(),
-            'Riesgo' => null, // temporalmente, hasta integrar el modelo ML
+            'Riesgo' => null,
             'edad' => $request->edad
         ]);
 
-        // 2️⃣ Crear registros en las tablas hijas
+        // Crear registros hijos según nuevas FK
         $historial->antecedentes()->create([
-            'Mamografia' => $request->Mamografia,
-            'DiagnosticoPrevioCancer' => $request->DiagnosticoPrevioCancer,
+            'id_mamografia' => $request->id_mamografia,
+            'id_diagnostico_previo' => $request->id_diagnostico_previo,
         ]);
 
         $historial->familiares()->create([
-            'FamiliarPrimerGradoCC' => $request->FamiliarPrimerGradoCC,
-            'FamiliarSegundoGradoCC' => $request->FamiliarSegundoGradoCC,
+            'id_familiar_primer_grado' => $request->id_familiar_primer_grado,
+            'id_familiar_segundo_grado' => $request->id_familiar_segundo_grado,
         ]);
 
         $historial->habitos()->create([
-            'Ejercicio' => $request->Ejercicio,
-            'Alcohol' => $request->Alcohol,
+            'id_ejercicio' => $request->id_ejercicio,
+            'id_alcohol' => $request->id_alcohol,
         ]);
 
         $historial->reproductivos()->create([
-            'Menstruacion' => $request->Menstruacion,
-            'PrimerHijo' => $request->PrimerHijo,
+            'id_menstruacion' => $request->id_menstruacion,
+            'id_primer_hijo' => $request->id_primer_hijo,
         ]);
 
-        // 3️⃣ Obtener datos para mostrar en la vista
-        $paciente = \App\Models\Paciente::findOrFail($id_paciente);
-        $historiales = $paciente->historiales()->orderBy('fecha_registro', 'asc')->get();
-
-        // ==== Ejecutar modelo ML ====
+        // === Ejecutar el modelo de Machine Learning ===
         $command = "python3 " . base_path('python_model/predict.py') . " "
             . escapeshellarg($request->edad) . " "
-            . escapeshellarg($request->FamiliarPrimerGradoCC) . " "
-            . escapeshellarg($request->FamiliarSegundoGradoCC) . " "
-            . escapeshellarg($request->DiagnosticoPrevioCancer) . " "
-            . escapeshellarg($request->Menstruacion) . " "
-            . escapeshellarg($request->PrimerHijo) . " "
-            . escapeshellarg($request->Ejercicio) . " "
-            . escapeshellarg($request->Alcohol) . " "
-            . escapeshellarg($request->Mamografia);
+            . escapeshellarg($request->id_familiar_primer_grado) . " "
+            . escapeshellarg($request->id_familiar_segundo_grado) . " "
+            . escapeshellarg($request->id_diagnostico_previo) . " "
+            . escapeshellarg($request->id_menstruacion) . " "
+            . escapeshellarg($request->id_primer_hijo) . " "
+            . escapeshellarg($request->id_ejercicio) . " "
+            . escapeshellarg($request->id_alcohol) . " "
+            . escapeshellarg($request->id_mamografia);
 
         $prediccion = trim(shell_exec($command));
-        if ($prediccion === null || $prediccion === "") { $prediccion = 0; }
+        if ($prediccion === null || $prediccion === "") $prediccion = 0;
 
-        // $prediccion es el valor que viene del script Python (0,1,2)
         $mapaRiesgo = [
             0 => 'Bajo',
             1 => 'Moderado',
             2 => 'Alto'
         ];
-
         $riesgoTexto = $mapaRiesgo[$prediccion] ?? 'Desconocido';
 
-        // Guardar riesgo
         $historial->Riesgo = $prediccion;
         $historial->save();
 
-        // ==== Redirigir ====
         return redirect()->route('pacientes.ver', $id_paciente)
-            ->with('success', "Historial registrado y riesgo calculado: $riesgoTexto");
+            ->with('success', "Historial registrado y riesgo calculado. Riesgo de cáncer: $riesgoTexto");
     }
-
 }

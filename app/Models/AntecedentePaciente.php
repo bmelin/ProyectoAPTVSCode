@@ -14,10 +14,21 @@ class AntecedentePaciente extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_historial',
-        'Mamografia',
-        'DiagnosticoPrevioCancer',
+    'id_historial',
+    'id_mamografia',
+    'id_diagnostico_previo',
     ];
+
+    public function mamografia()
+    {
+        return $this->belongsTo(RespuestaBinaria::class, 'id_mamografia', 'id_respuesta');
+    }
+
+    public function diagnosticoPrevio()
+    {
+        return $this->belongsTo(RespuestaBinaria::class, 'id_diagnostico_previo', 'id_respuesta');
+    }
+
 
     public function historial()
     {

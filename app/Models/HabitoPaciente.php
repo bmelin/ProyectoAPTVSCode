@@ -14,10 +14,21 @@ class HabitoPaciente extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_historial',
-        'Ejercicio',
-        'Alcohol',
+    'id_historial',
+    'id_ejercicio',
+    'id_alcohol',
     ];
+
+    public function ejercicio()
+    {
+        return $this->belongsTo(OpcionEjercicio::class, 'id_ejercicio', 'id_ejercicio');
+    }
+
+    public function alcohol()
+    {
+        return $this->belongsTo(OpcionAlcohol::class, 'id_alcohol', 'id_alcohol');
+    }
+
 
     public function historial()
     {

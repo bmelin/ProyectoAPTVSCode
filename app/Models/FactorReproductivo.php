@@ -14,10 +14,21 @@ class FactorReproductivo extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_historial',
-        'Menstruacion',
-        'PrimerHijo',
+    'id_historial',
+    'id_menstruacion',
+    'id_primer_hijo',
     ];
+
+    public function menstruacion()
+    {
+        return $this->belongsTo(OpcionMenstruacion::class, 'id_menstruacion', 'id_menstruacion');
+    }
+
+    public function primerHijo()
+    {
+        return $this->belongsTo(OpcionPrimerHijo::class, 'id_primer_hijo', 'id_primer_hijo');
+    }
+
 
     public function historial()
     {

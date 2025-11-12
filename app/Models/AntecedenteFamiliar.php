@@ -14,10 +14,21 @@ class AntecedenteFamiliar extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_historial',
-        'FamiliarPrimerGradoCC',
-        'FamiliarSegundoGradoCC',
+    'id_historial',
+    'id_familiar_primer_grado',
+    'id_familiar_segundo_grado',
     ];
+
+    public function primerGrado()
+    {
+        return $this->belongsTo(RespuestaBinaria::class, 'id_familiar_primer_grado', 'id_respuesta');
+    }
+
+    public function segundoGrado()
+    {
+        return $this->belongsTo(RespuestaBinaria::class, 'id_familiar_segundo_grado', 'id_respuesta');
+    }
+
 
     public function historial()
     {
