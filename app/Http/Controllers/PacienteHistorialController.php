@@ -41,7 +41,7 @@ class PacienteHistorialController extends Controller
 
             if ($ultimoHistorial->edad && $ultimoHistorial->fecha_registro) {
                 $fechaUltimo = Carbon::parse($ultimoHistorial->fecha_registro);
-                $edad += $fechaUltimo->diffInYears(now());
+                $edad = $ultimoHistorial->edad + $fechaUltimo->diffInYears(now());
             }
 
             $menstruacion = $ultimoHistorial->reproductivos->id_menstruacion ?? null;

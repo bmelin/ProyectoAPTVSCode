@@ -32,31 +32,34 @@
                     <p class="text-muted">No hay historiales registrados para este paciente.</p>
                 @else
                     <div class="timeline-container position-relative">
-                        @foreach($historiales as $historial)
-                            <div class="timeline-item d-inline-block text-center mx-2"
-                                data-bs-toggle="tooltip"
-                                title="
-                                Edad: {{ $historial->edad }},
-                                Mamografía: {{ $historial->antecedentes->Mamografia ? 'Sí' : 'No' }},
-                                Diagnóstico Cáncer: {{ $historial->antecedentes->DiagnosticoPrevioCancer ? 'Sí' : 'No' }},
-                                Familiar 1° grado: {{ $historial->familiares->FamiliarPrimerGradoCC ? 'Sí' : 'No' }},
-                                Familiar 2° grado: {{ $historial->familiares->FamiliarSegundoGradoCC ? 'Sí' : 'No' }},
-                                Ejercicio: {{ $historial->habitos->Ejercicio }},
-                                Alcohol: {{ $historial->habitos->Alcohol }},
-                                Menstruación: {{ $historial->reproductivos->Menstruacion }},
-                                Primer hijo: {{ $historial->reproductivos->PrimerHijo }},
-                                Riesgo cáncer: 
-                                @if($historial->Riesgo == 0) Bajo 
-                                @elseif($historial->Riesgo == 1) Moderado 
-                                @elseif($historial->Riesgo == 2) Alto 
-                                @else Desconocido @endif
-                                ">
-                            <div class="timeline-dot riesgo-{{ $historial->Riesgo }}"></div>
-                            <div class="timeline-date mt-2">{{ $historial->fecha_registro->format('d/m/Y') }}</div>
-                        </div>
+    @foreach($historiales as $historial)
+        <div class="timeline-item d-inline-block text-center mx-2"
+            data-bs-toggle="tooltip"
+            title="
+                Médico: Dr.(a) {{ $historial->medico?->nombre ?? 'No registrado' }},
+                Edad: {{ $historial->edad }},
+                Mamografía: {{ $historial->antecedentes?->mamografia?->descripcion ?? 'No especificado' }},
+                Diagnóstico previo cáncer: {{ $historial->antecedentes?->diagnosticoPrevio?->descripcion ?? 'No especificado' }},
+                Familiar 1° grado: {{ $historial->familiares?->primerGrado?->descripcion ?? 'No especificado' }},
+                Familiar 2° grado: {{ $historial->familiares?->segundoGrado?->descripcion ?? 'No especificado' }},
+                Ejercicio: {{ $historial->habitos?->ejercicio?->descripcion ?? 'No especificado' }},
+                Alcohol: {{ $historial->habitos?->alcohol?->descripcion ?? 'No especificado' }},
+                Menstruación: {{ $historial->reproductivos?->menstruacion?->descripcion ?? 'No especificado' }},
+                Primer hijo: {{ $historial->reproductivos?->primerHijo?->descripcion ?? 'No especificado' }},
+                Riesgo cáncer:
+                @if($historial->Riesgo == 0) Bajo
+                @elseif($historial->Riesgo == 1) Moderado
+                @elseif($historial->Riesgo == 2) Alto
+                @else Desconocido @endif
+            ">
+            <div class="timeline-dot riesgo-{{ $historial->Riesgo }}"></div>
+            <div class="timeline-date mt-2">{{ $historial->fecha_registro->format('d/m/Y') }}</div>
+        </div>
+    @endforeach
+</div>
 
-                        @endforeach
-                    </div>
+
+
                 @endif
 
                 <div class="text-center mt-4">

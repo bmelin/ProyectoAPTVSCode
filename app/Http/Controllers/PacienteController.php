@@ -72,7 +72,7 @@ class PacienteController extends Controller
         $paciente = Paciente::findOrFail($id);
 
         $historiales = $paciente->historiales()
-            ->with(['antecedentes', 'familiares', 'habitos', 'reproductivos'])
+            ->with(['antecedentes', 'familiares', 'habitos', 'reproductivos','medico'])
             ->orderBy('fecha_registro', 'asc')
             ->get();
 
