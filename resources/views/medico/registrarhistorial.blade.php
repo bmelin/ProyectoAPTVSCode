@@ -52,34 +52,61 @@
                             {{-- Diagnóstico previo y familiares --}}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">¿Diagnóstico previo de cáncer?</label>
-                                    <select name="id_diagnostico_previo" class="form-select rounded-3" required>
-                                        <option value="">Selecciona</option>
-                                        @foreach($respuestas as $r)
-                                            <option value="{{ $r->id_respuesta }}">{{ ucfirst($r->descripcion) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+    <label class="form-label fw-semibold">¿Diagnóstico previo de cáncer?</label>
+    <select name="id_diagnostico_previo" class="form-select rounded-3" required
+        @if($antecedentes['id_diagnostico_previo'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        @foreach($respuestas as $r)
+            <option value="{{ $r->id_respuesta }}"
+                {{ $antecedentes['id_diagnostico_previo'] == $r->id_respuesta ? 'selected' : '' }}>
+                {{ ucfirst($r->descripcion) }}
+            </option>
+        @endforeach
+    </select>
+
+    @if($antecedentes['id_diagnostico_previo'] == 1)
+        <input type="hidden" name="id_diagnostico_previo" value="1">
+    @endif
+</div>
+
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Familiar de 1° grado con cáncer</label>
-                                    <select name="id_familiar_primer_grado" class="form-select rounded-3" required>
-                                        <option value="">Selecciona</option>
-                                        @foreach($respuestas as $r)
-                                            <option value="{{ $r->id_respuesta }}">{{ ucfirst($r->descripcion) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+    <label class="form-label fw-semibold">Familiar de 1° grado con cáncer</label>
+    <select name="id_familiar_primer_grado" class="form-select rounded-3" required
+        @if($antecedentes['id_familiar_primer_grado'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        @foreach($respuestas as $r)
+            <option value="{{ $r->id_respuesta }}"
+                {{ $antecedentes['id_familiar_primer_grado'] == $r->id_respuesta ? 'selected' : '' }}>
+                {{ ucfirst($r->descripcion) }}
+            </option>
+        @endforeach
+    </select>
+
+    @if($antecedentes['id_familiar_primer_grado'] == 1)
+        <input type="hidden" name="id_familiar_primer_grado" value="1">
+    @endif
+</div>
+
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Familiar de 2° grado con cáncer</label>
-                                    <select name="id_familiar_segundo_grado" class="form-select rounded-3" required>
-                                        <option value="">Selecciona</option>
-                                        @foreach($respuestas as $r)
-                                            <option value="{{ $r->id_respuesta }}">{{ ucfirst($r->descripcion) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+    <label class="form-label fw-semibold">Familiar de 2° grado con cáncer</label>
+    <select name="id_familiar_segundo_grado" class="form-select rounded-3" required
+        @if($antecedentes['id_familiar_segundo_grado'] == 1) disabled @endif>
+        <option value="">Selecciona</option>
+        @foreach($respuestas as $r)
+            <option value="{{ $r->id_respuesta }}"
+                {{ $antecedentes['id_familiar_segundo_grado'] == $r->id_respuesta ? 'selected' : '' }}>
+                {{ ucfirst($r->descripcion) }}
+            </option>
+        @endforeach
+    </select>
+
+    @if($antecedentes['id_familiar_segundo_grado'] == 1)
+        <input type="hidden" name="id_familiar_segundo_grado" value="1">
+    @endif
+</div>
+
                             </div>
 
                             <hr>
@@ -118,28 +145,78 @@
                             <h5 class="fw-bold mb-3 text-primary">Factores Reproductivos</h5>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Edad de la primera menstruación</label>
-                                    <select name="id_menstruacion" class="form-select rounded-3" required>
-                                        <option value="">Selecciona</option>
-                                        @foreach($opcionesMenstruacion as $op)
-                                            <option value="{{ $op->id_menstruacion }}">
-                                                {{ ucfirst(str_replace('_', ' ', $op->descripcion ?? $op->id_menstruacion)) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+    <label class="form-label">Edad de la primera menstruación</label>
+
+    {{-- Si NO existe historial previo → campo editable --}}
+    @if (!$tieneHistorial)
+        <select name="id_menstruacion" class="form-select rounded-3" required>
+            <option value="">Selecciona</option>
+            @foreach($opcionesMenstruacion as $op)
+                <option value="{{ $op->id_menstruacion }}">
+                    {{ ucfirst(str_replace('_', ' ', $op->descripcion)) }}
+                </option>
+            @endforeach
+        </select>
+
+    {{-- Si YA existe un historial → bloquear selección pero mantener el valor --}}
+    @else
+        <select class="form-select rounded-3" disabled>
+            @foreach($opcionesMenstruacion as $op)
+                <option value="{{ $op->id_menstruacion }}"
+                    {{ $menstruacion == $op->id_menstruacion ? 'selected' : '' }}>
+                    {{ ucfirst(str_replace('_', ' ', $op->descripcion)) }}
+                </option>
+            @endforeach
+        </select>
+
+        {{-- Enviar valor igual que antes --}}
+        <input type="hidden" name="id_menstruacion" value="{{ $menstruacion }}">
+    @endif
+</div>
+
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Edad del primer hijo/a</label>
-                                    <select name="id_primer_hijo" class="form-select rounded-3" required>
-                                        <option value="">Selecciona</option>
-                                        @foreach($opcionesPrimerHijo as $op)
-                                            <option value="{{ $op->id_primer_hijo }}">
-                                                {{ ucfirst(str_replace('_', ' ', $op->descripcion ?? $op->id_primer_hijo)) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+    <label class="form-label">Edad del primer hijo/a</label>
+
+    @php
+        $ID_NUNCA = 'nunca';
+    @endphp
+
+    {{-- Si ya tuvo un hijo alguna vez (valor distinto de "nunca") → campo bloqueado --}}
+    @if($primerHijo && $primerHijo !== $ID_NUNCA)
+
+        <select class="form-select rounded-3" disabled>
+            @foreach($opcionesPrimerHijo as $op)
+                <option value="{{ $op->id_primer_hijo }}"
+                    {{ $primerHijo == $op->id_primer_hijo ? 'selected' : '' }}>
+                    {{ $op->descripcion }}
+                </option>
+            @endforeach
+        </select>
+
+        <input type="hidden" name="id_primer_hijo" value="{{ $primerHijo }}">
+
+    @else
+
+        {{-- Campo editable --}}
+        <select name="id_primer_hijo" class="form-select rounded-3" required>
+            <option value="">Selecciona</option>
+
+            @foreach($opcionesPrimerHijo as $op)
+                <option value="{{ $op->id_primer_hijo }}"
+                    {{ old('id_primer_hijo') == $op->id_primer_hijo ? 'selected' : '' }}>
+                    {{ $op->descripcion }}
+                </option>
+            @endforeach
+
+        </select>
+
+    @endif
+</div>
+
+
+
+
                             </div>
 
                             {{-- Botones --}}

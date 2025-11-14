@@ -59,6 +59,27 @@ class PacienteHistorialController extends Controller
         $opcionesMenstruacion = OpcionMenstruacion::all();
         $opcionesPrimerHijo = OpcionPrimerHijo::all();
 
+        // --------------------------
+        // REGLAS DE FILTRADO
+        // --------------------------
+        $ID_NUNCA     = 'nunca';
+        $ID_MENOR30   = 'menor_a_30';
+        $ID_MAYOR30   = 'mayor_a_30';
+
+        // ❗ Regla 1: Si edad < 30 → no permitir “Mayor de 30”
+        if ($edad !== null && $edad < 30) {
+            $opcionesPrimerHijo = $opcionesPrimerHijo->filter(function($op) use ($ID_MAYOR30) {
+                return $op->id_primer_hijo !== $ID_MAYOR30;
+            });
+        }
+
+        // ❗ Regla 2: Si en el último historial marcó “nunca” + tiene >30 años → no permitir “Menor de 30”
+        if ($primerHijo === $ID_NUNCA && $edad > 30) {
+            $opcionesPrimerHijo = $opcionesPrimerHijo->filter(function($op) use ($ID_MENOR30) {
+                return $op->id_primer_hijo !== $ID_MENOR30;
+            });
+        }
+
         return view('medico.registrarhistorial', compact(
             'id_paciente',
             'edad',
@@ -148,6 +169,8 @@ class PacienteHistorialController extends Controller
         $historial->save();
 
         return redirect()->route('pacientes.ver', $id_paciente)
-            ->with('success', "Historial registrado y riesgo calculado. Riesgo de cáncer: $riesgoTexto");
+            ->with('success', "Historial registrado y riesgo calculado. Riesgo de cáncer: $riesgoTexto")
+            ->with('riesgo', $riesgoTexto);
+
     }
 }
